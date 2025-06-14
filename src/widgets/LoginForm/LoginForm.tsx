@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { login } from "@/features/auth/login";
 import { useRouter } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
-import Link from "next/link"; // ✅ 추가!
+import Link from "next/link";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -14,14 +13,12 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const { token } = await login(username, password);
-      localStorage.setItem("token", token);
-      router.push("/");
-    } catch (err) {
-      console.error("로그인 실패:", err);
-      alert("로그인 실패!");
-    }
+
+    // ✅ 서버 호출 제거! 대신 프론트에서 token 저장
+    localStorage.setItem("token", "fake-token");
+
+    // ✅ 홈으로 이동
+    router.push("/");
   };
 
   return (
