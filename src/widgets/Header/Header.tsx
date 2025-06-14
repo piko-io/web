@@ -14,9 +14,8 @@ export default function Header() {
       <div className="space-x-2">
         <Button variant="outline">공지사항</Button>
 
-        {/* ✅ SSR-safe: useAuth가 false라면 로그인으로 */}
         <Button asChild>
-          <Link href={isLoggedIn ? "/create-quiz" : "/login"}>
+          <Link href={isLoggedIn ? "/create-board" : "/login"}>
             {isLoggedIn ? "퀴즈 만들기" : "로그인"}
           </Link>
         </Button>

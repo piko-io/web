@@ -13,10 +13,10 @@ import {
 } from "@/shared/ui/card";
 
 interface QuizCardProps {
-  id: number;           // API id
-  title: string;        // 제목
-  description: string;  // 설명
-  thumbnail: string;    // 이미지 URL (API 필드 이름 맞춤)
+  id: number;           
+  title: string;        
+  description: string;  
+  thumbnail: string;    
 }
 
 export default function QuizCard({

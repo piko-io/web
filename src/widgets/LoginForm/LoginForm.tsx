@@ -14,10 +14,8 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ 서버 호출 제거! 대신 프론트에서 token 저장
     localStorage.setItem("token", "fake-token");
 
-    // ✅ 홈으로 이동
     router.push("/");
   };
 
