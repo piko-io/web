@@ -7,9 +7,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog"; 
+} from "@/shared/ui/dialog";
 import { useState, useRef } from "react";
 import { AnswerForm } from "@/features/quiz/AnswerForm/AnswerForm";
+import { Pencil, Trash } from "lucide-react"; 
 
 export default function CreateQuizForm() {
   const router = useRouter();
@@ -53,9 +54,7 @@ export default function CreateQuizForm() {
     if (selectedQuizId != null) {
       setQuizzes((prev) =>
         prev.map((quiz) =>
-          quiz.id === selectedQuizId
-            ? { ...quiz, answers: tempAnswers }
-            : quiz
+          quiz.id === selectedQuizId ? { ...quiz, answers: tempAnswers } : quiz
         )
       );
       setSelectedQuizId(null);
@@ -90,7 +89,8 @@ export default function CreateQuizForm() {
               quiz.answers.length === 0 ? "border-red-500" : ""
             } cursor-pointer`}
             onClick={() => {
-              if (quiz.answers.length === 0) openAnswerDialog(quiz.id, quiz.answers);
+              if (quiz.answers.length === 0)
+                openAnswerDialog(quiz.id, quiz.answers);
             }}
           >
             <img
@@ -119,7 +119,7 @@ export default function CreateQuizForm() {
                     openAnswerDialog(quiz.id, quiz.answers);
                   }}
                 >
-                  ✏️
+                  <Pencil className="w-5 h-5" /> {/* Lucide 수정 아이콘 */}
                 </Button>
               )}
               <Button
@@ -130,7 +130,7 @@ export default function CreateQuizForm() {
                   handleRemoveQuiz(quiz.id);
                 }}
               >
-                🗑️
+                <Trash className="w-5 h-5" /> {/* Lucide 삭제 아이콘 */}
               </Button>
             </div>
           </div>
@@ -153,7 +153,10 @@ export default function CreateQuizForm() {
         />
       </div>
 
-      <Dialog open={selectedQuizId != null} onOpenChange={() => setSelectedQuizId(null)}>
+      <Dialog
+        open={selectedQuizId != null}
+        onOpenChange={() => setSelectedQuizId(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>정답 입력</DialogTitle>
@@ -161,7 +164,9 @@ export default function CreateQuizForm() {
           <AnswerForm
             answers={tempAnswers}
             onAdd={(a) => setTempAnswers((prev) => [...prev, a])}
-            onRemove={(a) => setTempAnswers((prev) => prev.filter((x) => x !== a))}
+            onRemove={(a) =>
+              setTempAnswers((prev) => prev.filter((x) => x !== a))
+            }
             onSave={handleSaveAnswer}
             onCancel={() => setSelectedQuizId(null)}
           />
