@@ -39,7 +39,7 @@ export default function CreateQuizPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8 flex flex-col gap-8">
+    <main className="min-h-screen flex flex-col">
       <div className="flex justify-between items-center">
         <div className="text-xl font-semibold">보드 ID: {boardId}</div>
         <div className="flex gap-3">
