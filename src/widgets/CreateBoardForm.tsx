@@ -1,66 +1,86 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 
 export default function CreateBoardForm() {
+  const [boardId, setBoardId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [isPublic] = useState(true);
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isPublic] = useState(true);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
 
   const router = useRouter();
+  const params = useParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (params.boardId) {
+      setBoardId(params.boardId as string);
+    }
+  }, [params.boardId]);
 
-    const boardId = Date.now();
-    console.log({
-      title,
-      description,
-      isPublic,
-      thumbnail,
-      boardId,
-    });
-
-    alert(`보드 생성 완료! (임시 ID: ${boardId})`);
-    router.push(`/create-board/${boardId}/create-quiz`);
-  };
+  useEffect(() => {
+    if (!boardId) return;
+    const raw = localStorage.getItem("myBoards") || "[]";
+    const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+    const current = boards.find((b: any) => b.id == boardId);
+    if (current) {
+      setTitle(current.title);
+      setDescription(current.description);
+      setPreview(current.thumbnail);
+      setQuizzes(current.quizzes || []); 
+    }
+  }, [boardId]);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setThumbnail(file);
-
+    const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPreview(url);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
     } else {
       setPreview(null);
     }
   };
 
-  const handleThumbnailClick = () => {
-    fileInputRef.current?.click();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const id = boardId || Date.now();
+    const newBoard = {
+      id,
+      title,
+      description,
+      isPublic,
+      thumbnail: preview || "",
+      quizzes, 
+    };
+
+    const raw = localStorage.getItem("myBoards") || "[]";
+    const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+    const updated = boards.filter((b: any) => b.id != id);
+    localStorage.setItem("myBoards", JSON.stringify([...updated, newBoard]));
+
+    alert(`보드 저장 완료!`);
+    router.push(`/create-board/${id}/create-quiz`);
   };
 
   return (
-    <main className="h-screen overflow-hidden flex items-center justify-center bg-background text-foreground">
+    <main className="h-screen flex items-center justify-center p-6">
       <form
         onSubmit={handleSubmit}
         className="max-w-md w-full p-6 bg-card rounded-xl shadow flex flex-col gap-6"
       >
-        <h1 className="text-2xl font-bold">보드 만들기</h1>
+        <h1 className="text-2xl font-bold">
+          보드 {boardId ? "수정" : "만들기"}
+        </h1>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="title" className="font-medium">
-            제목
-          </label>
+          <label className="font-medium">제목</label>
           <Input
-            id="title"
             placeholder="제목 입력"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -68,13 +88,10 @@ export default function CreateBoardForm() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="description" className="font-medium">
-            설명
-          </label>
+          <label className="font-medium">설명</label>
           <textarea
-            id="description"
             placeholder="설명 입력"
-            className="border border-input rounded w-full p-3 focus:outline-none"
+            className="border border-input rounded w-full p-3"
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -84,15 +101,11 @@ export default function CreateBoardForm() {
         <div className="flex flex-col gap-2">
           <label className="font-medium">썸네일</label>
           <div
-            onClick={handleThumbnailClick}
-            className="border-2 border-dashed border-muted rounded-lg p-6 text-center cursor-pointer hover:bg-muted/20 transition"
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/20"
           >
             {preview ? (
-              <img
-                src={preview}
-                alt="썸네일 미리보기"
-                className="mx-auto max-h-48 rounded"
-              />
+              <img src={preview} alt="썸네일" className="mx-auto max-h-48 rounded" />
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <span className="text-4xl">+</span>
@@ -110,7 +123,7 @@ export default function CreateBoardForm() {
         </div>
 
         <Button type="submit" size="lg" className="w-full">
-          보드 생성 후 퀴즈 만들기
+          보드 {boardId ? "수정 완료" : "생성 후 퀴즈 만들기"}
         </Button>
       </form>
     </main>

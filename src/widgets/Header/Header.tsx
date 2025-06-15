@@ -16,6 +16,12 @@ export default function Header() {
           <Link href="/notice">공지사항</Link>
         </Button>
 
+        {isLoggedIn && (
+          <Button asChild variant="outline">
+            <Link href="/my-boards">내 보드</Link>
+          </Button>
+        )}
+
         <Button asChild>
           <Link href={isLoggedIn ? "/create-board" : "/login"}>
             {isLoggedIn ? "퀴즈 만들기" : "로그인"}

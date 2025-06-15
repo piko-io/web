@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -16,32 +16,77 @@ import { Pencil, Trash, Settings, Search } from "lucide-react";
 export default function CreateQuizForm() {
   const router = useRouter();
   const params = useParams();
-  const boardId = params.boardId;
+  const [boardId, setBoardId] = useState<string | null>(null);
+
+  const [quizzes, setQuizzes] = useState<
+    { id: number; preview?: string; answers: string[] }[]
+  >([]);
 
   const [search, setSearch] = useState("");
-  const [quizzes, setQuizzes] = useState<
-    { id: number; file: File; preview: string; answers: string[] }[]
-  >([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [tempAnswers, setTempAnswers] = useState<string[]>([]);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAddQuiz = () => fileInputRef.current?.click();
+  useEffect(() => {
+    if (params.boardId) {
+      setBoardId(params.boardId as string);
+    }
+  }, [params.boardId]);
+
+  useEffect(() => {
+    if (!boardId) return;
+    const raw = localStorage.getItem("myBoards") || "[]";
+    const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+    const current = boards.find((b: any) => b.id == boardId);
+    if (current && Array.isArray(current.quizzes)) {
+      setQuizzes(current.quizzes);
+    }
+  }, [boardId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setQuizzes((prev) => [
-        ...prev,
-        { id: Date.now(), file, preview, answers: [] },
-      ]);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      const newQuiz = { id: Date.now(), preview: base64, answers: [] };
+
+      setQuizzes((prev) => {
+        const updated = [...prev, newQuiz];
+
+        if (boardId) {
+          const raw = localStorage.getItem("myBoards") || "[]";
+          const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+          const updatedBoards = boards.map((b: any) =>
+            b.id == boardId ? { ...b, quizzes: updated } : b
+          );
+          localStorage.setItem("myBoards", JSON.stringify(updatedBoards));
+        }
+
+        return updated;
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
+  const handleAddQuiz = () => fileInputRef.current?.click();
+
   const handleRemoveQuiz = (id: number) => {
-    setQuizzes((prev) => prev.filter((quiz) => quiz.id !== id));
+    setQuizzes((prev) => {
+      const updated = prev.filter((quiz) => quiz.id !== id);
+
+      if (boardId) {
+        const raw = localStorage.getItem("myBoards") || "[]";
+        const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+        const updatedBoards = boards.map((b: any) =>
+          b.id == boardId ? { ...b, quizzes: updated } : b
+        );
+        localStorage.setItem("myBoards", JSON.stringify(updatedBoards));
+      }
+
+      return updated;
+    });
   };
 
   const openAnswerDialog = (quizId: number, answers: string[]) => {
@@ -51,29 +96,46 @@ export default function CreateQuizForm() {
 
   const handleSaveAnswer = () => {
     if (selectedQuizId != null) {
-      setQuizzes((prev) =>
-        prev.map((quiz) =>
+      setQuizzes((prev) => {
+        const updated = prev.map((quiz) =>
           quiz.id === selectedQuizId ? { ...quiz, answers: tempAnswers } : quiz
-        )
-      );
+        );
+
+        if (boardId) {
+          const raw = localStorage.getItem("myBoards") || "[]";
+          const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+          const updatedBoards = boards.map((b: any) =>
+            b.id == boardId ? { ...b, quizzes: updated } : b
+          );
+          localStorage.setItem("myBoards", JSON.stringify(updatedBoards));
+        }
+
+        return updated;
+      });
       setSelectedQuizId(null);
       setTempAnswers([]);
     }
   };
 
   const handleSave = () => {
-    console.log("최종 저장:", quizzes);
-    alert(`저장 완료 (보드 ID: ${boardId})`);
+    if (!boardId) return;
+    const raw = localStorage.getItem("myBoards") || "[]";
+    const boards = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+    const updated = boards.map((b: any) =>
+      b.id == boardId ? { ...b, quizzes } : b
+    );
+    localStorage.setItem("myBoards", JSON.stringify(updated));
+    alert(`퀴즈 저장 완료!`);
+    router.push(`/my-boards`);
   };
 
   const handleCancel = () => router.back();
 
   const filteredQuizzes = quizzes.filter(
     (quiz) =>
-      quiz.file.name.toLowerCase().includes(search.toLowerCase()) ||
       quiz.answers.some((answer) =>
         answer.toLowerCase().includes(search.toLowerCase())
-      )
+      ) || search.trim() === ""
   );
 
   return (
@@ -83,7 +145,7 @@ export default function CreateQuizForm() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/create-board/`)}
+            onClick={() => boardId && router.push(`/create-board/${boardId}`)}
           >
             <Settings className="w-4 h-4 mr-1" />
             보드 수정
@@ -121,13 +183,19 @@ export default function CreateQuizForm() {
                 openAnswerDialog(quiz.id, quiz.answers);
             }}
           >
-            <img
-              src={quiz.preview}
-              alt="퀴즈 썸네일"
-              className={`w-full h-full object-cover ${
-                quiz.answers.length === 0 ? "opacity-50" : ""
-              }`}
-            />
+            {quiz.preview ? (
+              <img
+                src={quiz.preview}
+                alt="퀴즈 썸네일"
+                className={`w-full h-full object-cover ${
+                  quiz.answers.length === 0 ? "opacity-50" : ""
+                }`}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                썸네일 없음
+              </div>
+            )}
 
             {quiz.answers.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center">

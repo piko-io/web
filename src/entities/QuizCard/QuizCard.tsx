@@ -13,10 +13,10 @@ import {
 } from "@/shared/ui/card";
 
 interface QuizCardProps {
-  id: number;           
-  title: string;        
-  description: string;  
-  thumbnail: string;    
+  id: number;
+  title: string;
+  description: string;
+  thumbnail: string;
 }
 
 export default function QuizCard({
@@ -27,13 +27,13 @@ export default function QuizCard({
 }: QuizCardProps) {
   return (
     <Card className="group transition-all duration-300 hover:-translate-y-1 shadow-none border overflow-hidden">
-      <div className="relative">
+      <div className="relative w-full aspect-[2/1]">
         <Image
           src={thumbnail}
           alt={title}
-          width={400}
-          height={200}
-          className="w-full h-48 object-cover transition-transform duration-300"
+          fill
+          sizes="100%"
+          className="object-cover"
         />
       </div>
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
+import { Play } from "lucide-react";
 
 interface AnswerFormProps {
   answers: string[];
@@ -42,7 +43,7 @@ export function AnswerForm({ answers, onAdd, onRemove, onSave, onCancel }: Answe
             onKeyDown={handleKeyDown}
           />
           <Button type="button" onClick={handleAdd}>
-            ➤
+            <Play className="w-4 h-4" />
           </Button>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
