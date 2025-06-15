@@ -16,9 +16,20 @@ export default function MyBoardsPage() {
   const [boards, setBoards] = useState<any[]>([]);
 
   useEffect(() => {
-    const raw = localStorage.getItem("myBoards") || "[]";
-    const parsed = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
-    setBoards(parsed);
+    const raw = localStorage.getItem("myBoards");
+    let parsed = [];
+    if (raw) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = [];
+      }
+    }
+    if (Array.isArray(parsed)) {
+      setBoards(parsed);
+    } else {
+      setBoards([]);
+    }
   }, []);
 
   return (
@@ -31,37 +42,46 @@ export default function MyBoardsPage() {
       </div>
 
       <div className="flex flex-wrap gap-4">
-        {boards.map((b) => (
-          <Link
-            key={b.id}
-            href={`/create-board/${b.id}/create-quiz`}
-            className="w-60 group transition-all duration-300 hover:-translate-y-1"
-          >
-            <Card className="shadow-none border overflow-hidden">
-              <div className="relative">
-                <Image
-                  src={b.thumbnail}
-                  alt={b.title || "Untitled"}
-                  width={400}
-                  height={200}
-                  className="w-full h-48 object-cover transition-transform duration-300"
-                />
-              </div>
+        {boards.map((b) => {
+          const boardTitle =
+            b.title && b.title.trim().length > 0 ? b.title : "제목이 없는 보드";
+          const boardDescription =
+            b.description && b.description.trim().length > 0
+              ? b.description
+              : "설명이 등록되지 않았습니다.";
 
-              <CardHeader>
-                <CardTitle className="text-lg font-bold">
-                  {b.title || "Untitled"}
-                </CardTitle>
-              </CardHeader>
+          return (
+            <Link
+              key={b.id}
+              href={`/create-board/${b.id}/create-quiz`}
+              className="w-60 group transition-all duration-300 hover:-translate-y-1"
+            >
+              <Card className="shadow-none border overflow-hidden">
+                <div className="relative">
+                  <Image
+                    src={b.thumbnail}
+                    alt={`${boardTitle}의 대표 이미지`}
+                    width={400}
+                    height={200}
+                    className="w-full h-48 object-cover transition-transform duration-300"
+                  />
+                </div>
 
-              <CardContent>
-                <CardDescription className="text-sm text-gray-600 mb-2">
-                  {b.description || "No description"}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold">
+                    {boardTitle}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <CardDescription className="text-sm text-gray-600 mb-2">
+                    {boardDescription}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

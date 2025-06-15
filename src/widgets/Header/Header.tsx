@@ -22,7 +22,7 @@ export default function Header() {
 
         {isLoggedIn && (
           <Button asChild variant="outline">
-            <Link href="/my-boards">내 보드</Link>
+            <Link href="/my-boards">내 퀴즈</Link>
           </Button>
         )}
 
