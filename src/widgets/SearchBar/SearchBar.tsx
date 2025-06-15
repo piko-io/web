@@ -8,8 +8,8 @@ export default function SearchBar() {
   return (
     <div className="flex items-center justify-center p-4 gap-2">
       <Input placeholder="검색어를 입력하세요." className="max-w-lg w-full" />
-      <Button variant="outline" size="icon">
-        <Search />
+      <Button size="icon">
+          <Search className="w-5 h-5" />
       </Button>
     </div>
   );

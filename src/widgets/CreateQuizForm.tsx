@@ -1,28 +1,27 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState, useRef } from "react";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { useState, useRef } from "react";
 import { AnswerForm } from "@/features/quiz/AnswerForm/AnswerForm";
-import { Pencil, Trash } from "lucide-react"; 
+import { Pencil, Trash, Settings, Flag, Search } from "lucide-react";
 
 export default function CreateQuizForm() {
   const router = useRouter();
   const params = useParams();
   const boardId = params.boardId;
 
-  const [quizzes, setQuizzes] = useState<{
-    id: number;
-    file: File;
-    preview: string;
-    answers: string[];
-  }[]>([]);
+  const [search, setSearch] = useState("");
+  const [quizzes, setQuizzes] = useState<
+    { id: number; file: File; preview: string; answers: string[] }[]
+  >([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [tempAnswers, setTempAnswers] = useState<string[]>([]);
 
@@ -70,9 +69,21 @@ export default function CreateQuizForm() {
   const handleCancel = () => router.back();
 
   return (
-    <main className="min-h-screen flex flex-col gap-8 p-8">
-      <div className="flex justify-between items-center">
-        <div className="text-xl font-semibold">보드 ID: {boardId}</div>
+    <main className="min-h-screen flex flex-col items-start p-8 gap-6">
+      {/* ✅ 상단바 + 검색창 + 카드 모두 같은 flex column 내부에 있음 */}
+
+      {/* 상단바 */}
+      <div className="w-full flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm">
+            <Settings className="w-4 h-4 mr-1" />
+            설정
+          </Button>
+          <Button variant="outline" size="sm">
+            <Flag className="w-4 h-4 mr-1" />
+            신고 내역
+          </Button>
+        </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleCancel}>
             취소
@@ -81,7 +92,21 @@ export default function CreateQuizForm() {
         </div>
       </div>
 
-      <div className="mt-10 flex gap-6 flex-wrap">
+      {/* 검색창 */}
+      <div className="flex items-center gap-2 w-full max-w-xl">
+        <Input
+          placeholder="검색어를 입력하세요."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-grow"
+        />
+        <Button size="icon">
+          <Search className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {/* 문제 카드 리스트 */}
+      <div className="flex gap-6 flex-wrap justify-start items-start">
         {quizzes.map((quiz) => (
           <div
             key={quiz.id}
@@ -119,7 +144,7 @@ export default function CreateQuizForm() {
                     openAnswerDialog(quiz.id, quiz.answers);
                   }}
                 >
-                  <Pencil className="w-5 h-5" /> {/* Lucide 수정 아이콘 */}
+                  <Pencil className="w-5 h-5" />
                 </Button>
               )}
               <Button
@@ -130,12 +155,13 @@ export default function CreateQuizForm() {
                   handleRemoveQuiz(quiz.id);
                 }}
               >
-                <Trash className="w-5 h-5" /> {/* Lucide 삭제 아이콘 */}
+                <Trash className="w-5 h-5" />
               </Button>
             </div>
           </div>
         ))}
 
+        {/* 문제 추가 박스 */}
         <div
           onClick={handleAddQuiz}
           className="border-2 border-dashed border-black rounded-lg p-12 text-center cursor-pointer hover:bg-gray-100 w-60 h-60 flex flex-col items-center justify-center"
@@ -153,6 +179,7 @@ export default function CreateQuizForm() {
         />
       </div>
 
+      {/* 정답 입력 모달 */}
       <Dialog
         open={selectedQuizId != null}
         onOpenChange={() => setSelectedQuizId(null)}
