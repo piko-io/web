@@ -48,15 +48,15 @@ export default function CreateBoardForm() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-white">
+    <main className="h-screen overflow-hidden flex items-center justify-center bg-background text-foreground">
       <form
         onSubmit={handleSubmit}
-        className="max-w-md w-full p-6 bg-white rounded shadow flex flex-col gap-6"
+        className="max-w-md w-full p-6 bg-card rounded-xl shadow flex flex-col gap-6"
       >
         <h1 className="text-2xl font-bold">보드 만들기</h1>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="title" className="font-medium text-black">
+          <label htmlFor="title" className="font-medium">
             제목
           </label>
           <Input
@@ -68,13 +68,13 @@ export default function CreateBoardForm() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="description" className="font-medium text-black">
+          <label htmlFor="description" className="font-medium">
             설명
           </label>
           <textarea
             id="description"
             placeholder="설명 입력"
-            className="border border-gray-300 rounded w-full p-3 focus:outline-none"
+            className="border border-input rounded w-full p-3 focus:outline-none"
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -82,10 +82,10 @@ export default function CreateBoardForm() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-medium text-black">썸네일</label>
+          <label className="font-medium">썸네일</label>
           <div
             onClick={handleThumbnailClick}
-            className="border-2 border-dashed border-black rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100"
+            className="border-2 border-dashed border-muted rounded-lg p-6 text-center cursor-pointer hover:bg-muted/20 transition"
           >
             {preview ? (
               <img
@@ -94,11 +94,9 @@ export default function CreateBoardForm() {
                 className="mx-auto max-h-48 rounded"
               />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-black">
+              <div className="flex flex-col items-center gap-2">
                 <span className="text-4xl">+</span>
-                <span className="text-sm">
-                  썸네일을 추가해보세요.
-                </span>
+                <span className="text-sm">썸네일을 추가해보세요.</span>
               </div>
             )}
           </div>
@@ -111,7 +109,9 @@ export default function CreateBoardForm() {
           />
         </div>
 
-        <Button type="submit">보드 생성 후 퀴즈 만들기</Button>
+        <Button type="submit" size="lg" className="w-full">
+          보드 생성 후 퀴즈 만들기
+        </Button>
       </form>
     </main>
   );

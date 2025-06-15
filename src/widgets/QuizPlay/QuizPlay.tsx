@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { Play } from "lucide-react";
 
 export function QuizPlay() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export function QuizPlay() {
   };
 
   const handleNext = () => {
-    alert("다음 문제로 이동 (추후 router.push 구현)");
+    alert("다음 문제로 이동");
     setResult(null);
     setAnswer("");
   };
@@ -47,8 +48,9 @@ export function QuizPlay() {
       )}
 
       {result ? (
-        <Button onClick={handleNext} className="mt-4">
-          다음 ➤
+        <Button onClick={handleNext} className="mt-4 flex items-center gap-2">
+          다음
+          <Play className="w-5 h-5" />
         </Button>
       ) : (
         <div className="flex w-full max-w-lg gap-2">
@@ -63,7 +65,9 @@ export function QuizPlay() {
               }
             }}
           />
-          <Button onClick={handleSubmit}>➤</Button>
+          <Button onClick={handleSubmit}>
+            <Play className="w-5 h-5" />
+          </Button>
         </div>
       )}
     </main>
