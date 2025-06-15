@@ -12,7 +12,9 @@ export default function Header() {
       <div className="text-2xl font-bold">📷 로고</div>
 
       <div className="space-x-2">
-        <Button variant="outline">공지사항</Button>
+        <Button asChild variant="outline">
+          <Link href="/notice">공지사항</Link>
+        </Button>
 
         <Button asChild>
           <Link href={isLoggedIn ? "/create-board" : "/login"}>

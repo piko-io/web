@@ -34,7 +34,6 @@ export function AnswerForm({ answers, onAdd, onRemove, onSave, onCancel }: Answe
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <label className="font-semibold">정답</label>
         <div className="flex gap-2">
           <Input
             placeholder="정답을 입력하세요 (최대 100자, 최대 10개)"
