@@ -22,17 +22,24 @@ const initialData = [
 
 export default function Home() {
   const [quizzes, setQuizzes] = useState(initialData);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const newQuizzes = JSON.parse(localStorage.getItem("newQuizzes") || "[]");
     setQuizzes([...initialData, ...newQuizzes]);
   }, []);
 
+  const filteredQuizzes = quizzes.filter(
+    (quiz) =>
+      quiz.title.toLowerCase().includes(search.toLowerCase()) ||
+      quiz.description.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <main>
       <Header />
-      <SearchBar />
-      <QuizGrid quizzes={quizzes} />
+      <SearchBar search={search} setSearch={setSearch} />
+      <QuizGrid quizzes={filteredQuizzes} />
     </main>
   );
 }

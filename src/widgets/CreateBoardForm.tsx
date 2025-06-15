@@ -32,7 +32,7 @@ export default function CreateBoardForm() {
       setTitle(current.title);
       setDescription(current.description);
       setPreview(current.thumbnail);
-      setQuizzes(current.quizzes || []); 
+      setQuizzes(current.quizzes || []);
     }
   }, [boardId]);
 
@@ -56,7 +56,7 @@ export default function CreateBoardForm() {
       description,
       isPublic,
       thumbnail: preview || "",
-      quizzes, 
+      quizzes,
     };
 
     const raw = localStorage.getItem("myBoards") || "[]";
@@ -91,7 +91,10 @@ export default function CreateBoardForm() {
           <label className="font-medium">설명</label>
           <textarea
             placeholder="설명 입력"
-            className="border border-input rounded w-full p-3"
+            className="
+              border border-input rounded w-full p-3
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+            "
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}

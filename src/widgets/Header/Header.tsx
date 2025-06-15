@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Camera } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useAuth } from "@/shared/hooks/useAuth";
 
@@ -9,7 +10,10 @@ export default function Header() {
 
   return (
     <header className="w-full flex justify-between items-center p-4 bg-white shadow">
-      <div className="text-2xl font-bold">📷 로고</div>
+      <div className="flex items-center gap-2 text-2xl font-bold">
+        <Camera className="w-6 h-6" />
+        <span>piko</span>
+      </div>
 
       <div className="space-x-2">
         <Button asChild variant="outline">
