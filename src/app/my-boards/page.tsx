@@ -11,25 +11,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { fetchMyBoards } from "@/features/board/fetchMyBoards";
 
 export default function MyBoardsPage() {
   const [boards, setBoards] = useState<any[]>([]);
 
   useEffect(() => {
-    const raw = localStorage.getItem("myBoards");
-    let parsed = [];
-    if (raw) {
+    async function loadBoards() {
       try {
-        parsed = JSON.parse(raw);
-      } catch {
-        parsed = [];
+        const boards = await fetchMyBoards();
+        setBoards(boards);
+      } catch (err) {
+        console.error(err);
+        setBoards([]);
       }
     }
-    if (Array.isArray(parsed)) {
-      setBoards(parsed);
-    } else {
-      setBoards([]);
-    }
+    loadBoards();
   }, []);
 
   return (
@@ -50,6 +47,11 @@ export default function MyBoardsPage() {
               ? b.description
               : "설명이 등록되지 않았습니다.";
 
+          const thumbnailSrc =
+            b.thumbnail && b.thumbnail.path
+              ? `https://s3.alpa.dev/piko/${b.thumbnail.path}`
+              : "/placeholder.png";
+
           return (
             <Link
               key={b.id}
@@ -59,7 +61,7 @@ export default function MyBoardsPage() {
               <Card className="shadow-none border overflow-hidden">
                 <div className="relative">
                   <Image
-                    src={b.thumbnail}
+                    src={thumbnailSrc}
                     alt={`${boardTitle}의 대표 이미지`}
                     width={400}
                     height={200}

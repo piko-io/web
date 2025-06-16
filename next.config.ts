@@ -7,8 +7,13 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "via.placeholder.com",
       },
+      {
+        protocol: "https",
+        hostname: "s3.alpa.dev",
+      },
     ],
   },
 };
 
 export default nextConfig;
+ 
