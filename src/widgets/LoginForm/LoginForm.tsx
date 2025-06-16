@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import Link from "next/link";
+import { login } from "@/features/auth/login";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -13,10 +14,14 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    localStorage.setItem("token", "fake-token");
-
-    router.push("/");
+    try {
+      const { token } = await login(username, password);
+      localStorage.setItem("token", token);
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      alert("로그인 실패");
+    }
   };
 
   return (

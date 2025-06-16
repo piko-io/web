@@ -5,5 +5,5 @@ export async function login(username: string, password: string) {
     username,
     password,
   });
-  return data;
+  return data; 
 }

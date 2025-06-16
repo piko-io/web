@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { register } from "@/features/auth/register";
 import { useRouter } from "next/navigation";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
+import { register } from "@/features/auth/register";
 
 export default function RegisterForm() {
   const [username, setUsername] = useState("");
@@ -16,11 +16,11 @@ export default function RegisterForm() {
     e.preventDefault();
     try {
       await register(username, nickname, password);
-      alert("회원가입 성공!");
+      alert("회원가입 성공");
       router.push("/login");
     } catch (err) {
-      console.error("회원가입 실패:", err);
-      alert("회원가입 실패!");
+      console.error(err);
+      alert("회원가입 실패");
     }
   };
 
@@ -36,13 +36,11 @@ export default function RegisterForm() {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
-
       <Input
         placeholder="Nickname"
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
       />
-
       <Input
         placeholder="Password"
         type="password"
