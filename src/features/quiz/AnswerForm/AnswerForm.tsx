@@ -64,9 +64,6 @@ export function AnswerForm({ answers, onAdd, onRemove, onSave, onCancel }: Answe
             </Badge>
           ))}
         </div>
-        <p className="text-sm text-gray-500">
-          ※ 음란물, 비하, 혐오 등의 퀴즈는 만들지 마세요 ^^
-        </p>
       </div>
 
       <div className="flex gap-4 justify-end">
