@@ -9,15 +9,19 @@ export default function QuizDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [board, setBoard] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadBoard() {
       try {
+        setLoading(true);
         const boardData = await fetchQuizDetails(id as string);
         setBoard(boardData);
       } catch (err) {
         console.error(err);
         setBoard(null);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -39,6 +43,23 @@ export default function QuizDetailPage() {
   const handlePlay = () => {
     router.push(`/quiz/${id}/play`);
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex flex-col justify-center items-center gap-8 p-8 bg-background">
+        <div className="w-[400px] h-[400px] bg-gray-200 rounded-lg flex items-center justify-center">
+          <span className="text-gray-500">로딩 중...</span>
+        </div>
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse mt-2"></div>
+          </CardHeader>
+        </Card>
+        <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex flex-col justify-center items-center gap-8 p-8 bg-background">
