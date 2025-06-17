@@ -30,12 +30,12 @@ export default function CreateBoardForm() {
     e.preventDefault();
     
     if (!title.trim()) {
-      alert("제목을 입력하세요.");
+      alert("제목을 입력해주세요.");
       return;
     }
     
     if (!file) {
-      alert("썸네일 파일을 선택하세요.");
+      alert("썸네일을 추가해주세요.");
       return;
     }
 
@@ -44,10 +44,10 @@ export default function CreateBoardForm() {
         title: title.trim(),
         description: description.trim()
       });
-
+      
       const board = await createBoard({
         title: title.trim(),
-        description: description.trim() || "설명이 없습니다.",  
+        description: description.trim() || "설명이 없습니다.",
         file,
       });
       
@@ -73,10 +73,9 @@ export default function CreateBoardForm() {
             placeholder="제목 입력"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required
           />
         </div>
-
+        
         <div className="flex flex-col gap-1">
           <label className="font-medium">설명</label>
           <textarea
@@ -87,7 +86,7 @@ export default function CreateBoardForm() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-
+        
         <div className="flex flex-col gap-2">
           <label className="font-medium">썸네일 *</label>
           <div
@@ -115,7 +114,7 @@ export default function CreateBoardForm() {
             className="hidden"
           />
         </div>
-
+        
         <Button type="submit" size="lg" className="w-full">
           생성 후 퀴즈 만들기
         </Button>

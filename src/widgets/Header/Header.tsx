@@ -27,9 +27,6 @@ export default function Header() {
       </div>
 
       <div className="space-x-2">
-        <Button asChild variant="outline">
-          <Link href="/notice">공지사항</Link>
-        </Button>
         {isLoggedIn && (
           <Button asChild variant="outline">
             <Link href="/my-boards">내 퀴즈</Link>

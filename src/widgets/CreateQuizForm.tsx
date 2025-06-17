@@ -127,8 +127,6 @@ export default function CreateQuizForm() {
         setQuizzes(loadedQuizzes);
       } catch (error) {
         console.error('퀴즈 불러오기 실패:', error);
-        console.error('에러 상세:', error.message);
-        console.error('에러 스택:', error.stack);
         setQuizzes([]);
       } finally {
         setLoading(false);
@@ -148,12 +146,27 @@ export default function CreateQuizForm() {
     description: string;
     answers: string[];
   }) => {
+    if (!data.file) {
+      alert('이미지를 추가해주세요.');
+      return;
+    }
+
+    if (!data.answers || data.answers.length === 0) {
+      alert('정답을 추가해주세요.');
+      return;
+    }
+    const validAnswers = data.answers.filter(answer => answer.trim() !== '');
+    if (validAnswers.length === 0) {
+      alert('올바른 정답을 입력해주세요.');
+      return;
+    }
+
     const newQuiz: Quiz = {
       id: Date.now().toString(),
       preview: data.file ? URL.createObjectURL(data.file) : undefined,
       question: data.question,
       description: data.description,
-      answers: data.answers,
+      answers: validAnswers,
       file: data.file,
     };
     setQuizzes((prev) => [...prev, newQuiz]);
@@ -189,6 +202,23 @@ export default function CreateQuizForm() {
   }) => {
     if (!editingQuiz) return;
     
+    const hasImage = data.file || editingQuiz.preview;
+    if (!hasImage) {
+      alert('이미지를 추가해주세요.');
+      return;
+    }
+
+    if (!data.answers || data.answers.length === 0) {
+      alert('정답을 추가해주세요.');
+      return;
+    }
+
+    const validAnswers = data.answers.filter(answer => answer.trim() !== '');
+    if (validAnswers.length === 0) {
+      alert('올바른 정답을 입력해주세요.');
+      return;
+    }
+    
     setQuizzes((prev) =>
       prev.map((q) =>
         q.id === editingQuiz.id
@@ -197,7 +227,7 @@ export default function CreateQuizForm() {
               preview: data.file ? URL.createObjectURL(data.file) : q.preview,
               question: data.question,
               description: data.description,
-              answers: data.answers,
+              answers: validAnswers,
               file: data.file || q.file,
             }
           : q
@@ -235,8 +265,25 @@ export default function CreateQuizForm() {
 
   const handleSave = async () => {
     try {
+      for (const quiz of quizzes) {
+        if (!quiz.preview && !quiz.file) {
+          alert(`"${quiz.question || '제목 없음'}" 퀴즈에 이미지를 추가해주세요.`);
+          return;
+        }
+        
+        if (!quiz.answers || quiz.answers.length === 0) {
+          alert(`"${quiz.question || '제목 없음'}" 퀴즈에 정답을 추가해주세요.`);
+          return;
+        }
+
+        const validAnswers = quiz.answers.filter(answer => answer && answer.trim() !== '');
+        if (validAnswers.length === 0) {
+          alert(`"${quiz.question || '제목 없음'}" 퀴즈에 올바른 정답을 입력해주세요.`);
+          return;
+        }
+      }
+
       const newQuizzes = quizzes.filter(quiz => quiz.file && quiz.id.length <= 20);
-      
       const updatedQuizzes = quizzes.filter(quiz => quiz.id.length > 20);
       
       console.log('새 퀴즈:', newQuizzes);

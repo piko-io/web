@@ -1,5 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -19,6 +19,7 @@ interface Quiz {
 
 export function QuizPlay() {
   const { id } = useParams();
+  const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -26,6 +27,7 @@ export function QuizPlay() {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState("");
+  const [results, setResults] = useState<{correct: boolean, userAnswer: string, correctAnswer: string}[]>([]);
 
   useEffect(() => {
     async function loadQuizzes() {
@@ -77,13 +79,23 @@ export function QuizPlay() {
       const response = await checkAnswer(currentQuiz.id, answer.trim());
       console.log('정답 확인 응답:', response);
       
-      if (response.data && response.data.isCorrect) {
+      const isCorrect = response.data && response.data.correct;
+      const correctAnswerText = response.data && response.data.answers && response.data.answers.length > 0 
+        ? response.data.answers[0] 
+        : "";
+      
+      // 결과 저장
+      setResults(prev => [...prev, {
+        correct: isCorrect,
+        userAnswer: answer.trim(),
+        correctAnswer: correctAnswerText
+      }]);
+      
+      if (isCorrect) {
         setResult("correct");
       } else {
         setResult("wrong");
-        if (response.data && response.data.correctAnswer) {
-          setCorrectAnswer(response.data.correctAnswer);
-        }
+        setCorrectAnswer(correctAnswerText);
       }
       
     } catch (error) {
@@ -96,7 +108,25 @@ export function QuizPlay() {
 
   const handleNext = () => {
     if (isLastQuiz) {
-      alert("퀴즈 완료! 결과 페이지로 이동");
+      // 현재 결과도 포함해서 계산 (마지막 문제 결과 포함)
+      const finalResults = [...results];
+      
+      // 현재 문제 결과가 아직 results에 없다면 추가
+      if (result && finalResults.length === currentQuizIndex) {
+        finalResults.push({
+          correct: result === "correct",
+          userAnswer: answer.trim(),
+          correctAnswer: correctAnswer
+        });
+      }
+      
+      const correctCount = finalResults.filter(r => r.correct).length;
+      const totalQuestions = quizzes.length;
+      const score = Math.round((correctCount / totalQuestions) * 100);
+      
+      console.log('최종 결과:', { correctCount, totalQuestions, score, finalResults });
+      
+      router.push(`/quiz/${id}/result?score=${score}&correct=${correctCount}&total=${totalQuestions}`);
     } else {
       setCurrentQuizIndex(prev => prev + 1);
       setResult(null);
@@ -140,7 +170,7 @@ export function QuizPlay() {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-gray-800 h-2 rounded-full transition-all duration-300"
             style={{ width: `${((currentQuizIndex + 1) / quizzes.length) * 100}%` }}
           />
         </div>
@@ -162,6 +192,9 @@ export function QuizPlay() {
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               </div>
+              <span className="text-gray-400 text-xs">
+                {currentQuiz.question.toLowerCase().replace(/[^a-z0-9가-힣]/g, '_').substring(0, 20) || 'code'}.js
+              </span>
             </div>
             <pre className="whitespace-pre-wrap overflow-x-auto">
               <code>{currentQuiz.description}</code>
