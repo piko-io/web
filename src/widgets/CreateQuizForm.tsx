@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Pencil, Trash, Search } from "lucide-react";
 import CreateQuizModal from "@/widgets/CreateQuizModal";
+import { saveBoardQuizzes } from "@/shared/api/saveBoardQuizzes";
 
 interface Quiz {
   id: string;
@@ -13,6 +14,7 @@ interface Quiz {
   question: string;
   description: string;
   answers: string[];
+  file?: File; 
 }
 
 export default function CreateQuizForm() {
@@ -29,13 +31,15 @@ export default function CreateQuizForm() {
     file?: File;
     question: string;
     description: string;
+    answers: string[];
   }) => {
     const newQuiz: Quiz = {
       id: Date.now().toString(),
       preview: data.file ? URL.createObjectURL(data.file) : undefined,
       question: data.question,
       description: data.description,
-      answers: [],
+      answers: data.answers,
+      file: data.file,
     };
     setQuizzes((prev) => [...prev, newQuiz]);
   };
@@ -44,6 +48,7 @@ export default function CreateQuizForm() {
     file?: File;
     question: string;
     description: string;
+    answers: string[];
   }) => {
     if (!editingQuiz) return;
     setQuizzes((prev) =>
@@ -54,6 +59,8 @@ export default function CreateQuizForm() {
               preview: data.file ? URL.createObjectURL(data.file) : q.preview,
               question: data.question,
               description: data.description,
+              answers: data.answers,
+              file: data.file,
             }
           : q
       )
@@ -69,6 +76,11 @@ export default function CreateQuizForm() {
     quiz.question.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleSave = async () => {
+    await saveBoardQuizzes({ boardId, quizzes });
+    router.push("/my-boards");
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-start p-8 gap-6">
       <div className="w-full flex justify-between items-center">
@@ -76,7 +88,7 @@ export default function CreateQuizForm() {
           <Button variant="outline" onClick={() => router.back()}>
             취소
           </Button>
-          <Button onClick={() => console.log("저장")}>저장</Button>
+          <Button onClick={handleSave}>저장</Button>
         </div>
       </div>
 

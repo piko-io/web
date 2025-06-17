@@ -2,12 +2,20 @@
 
 import dynamic from "next/dynamic";
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { Upload } from "lucide-react";
-import { AnswerForm } from "@/features/quiz/AnswerForm/AnswerForm";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 interface CreateQuizModalProps {
   open: boolean;
@@ -36,7 +44,10 @@ export default function CreateQuizModal({
   const [description, setDescription] = useState(initialData?.description || "");
   const [answers, setAnswers] = useState<string[]>(initialData?.answers || []);
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(initialData?.preview);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(
+    initialData?.preview
+  );
+  const [inputValue, setInputValue] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,6 +74,25 @@ export default function CreateQuizModal({
       setFile(selected);
       setPreviewUrl(URL.createObjectURL(selected));
     }
+  };
+
+  const handleAddAnswer = () => {
+    const trimmed = inputValue.trim();
+    if (trimmed && !answers.includes(trimmed) && answers.length < 10) {
+      setAnswers((prev) => [...prev, trimmed]);
+      setInputValue("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddAnswer();
+    }
+  };
+
+  const handleRemoveAnswer = (answer: string) => {
+    setAnswers((prev) => prev.filter((a) => a !== answer));
   };
 
   const handleCreate = () => {
@@ -99,7 +129,11 @@ export default function CreateQuizModal({
             onClick={handleFileSelect}
           >
             {previewUrl ? (
-              <img src={previewUrl} alt="미리보기" className="w-full object-contain rounded-lg" />
+              <img
+                src={previewUrl}
+                alt="미리보기"
+                className="w-full object-contain rounded-lg"
+              />
             ) : (
               <>
                 <Upload className="w-8 h-8 mb-2" />
@@ -139,15 +173,45 @@ export default function CreateQuizModal({
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
             <p className="mb-2 text-sm text-muted-foreground">정답 입력</p>
-            <AnswerForm
-              answers={answers}
-              onAdd={(a) => setAnswers((prev) => [...prev, a])}
-              onRemove={(a) => setAnswers((prev) => prev.filter((x) => x !== a))}
-              onSave={handleCreate}
-              onCancel={onClose}
-            />
+            <div className="flex gap-2">
+              <Input
+                placeholder="정답을 입력하세요 (최대 100자, 최대 10개)"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <Button type="button" onClick={handleAddAnswer}>
+                추가
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-2">
+              {answers.map((answer) => (
+                <Badge
+                  key={answer}
+                  variant="outline"
+                  className="flex items-center gap-1 text-base px-2 py-0.5"
+                >
+                  {answer}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAnswer(answer)}
+                    className="ml-1"
+                  >
+                    &times;
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-4 justify-end">
+            <Button variant="outline" onClick={onClose}>
+              취소
+            </Button>
+            <Button onClick={handleCreate}>확인</Button>
           </div>
         </div>
       </DialogContent>
