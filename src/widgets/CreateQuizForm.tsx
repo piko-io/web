@@ -9,6 +9,7 @@ import CreateQuizModal from "@/widgets/CreateQuizModal";
 import { saveBoardQuizzes } from "@/shared/api/saveBoardQuizzes";
 import { fetchBoardQuizzes } from "@/shared/api/fetchBoardQuizzes";
 import { deleteQuiz } from "@/shared/api/deleteQuiz";
+import { fetchQuizDetails } from "@/shared/api/fetchQuizDetails";
 
 interface Quiz {
   id: string;
@@ -85,6 +86,34 @@ export default function CreateQuizForm() {
       file: data.file,
     };
     setQuizzes((prev) => [...prev, newQuiz]);
+  };
+
+  const handleEditQuiz = async (quiz: Quiz) => {
+    try {
+      // 서버에 저장된 퀴즈인 경우 상세 정보 조회
+      if (quiz.id.length > 20) {
+        const details = await fetchQuizDetails(quiz.id);
+        const detailsData = details.data || details;
+        
+        const fullQuizData: Quiz = {
+          id: quiz.id,
+          question: detailsData.question || quiz.question,
+          description: detailsData.description || quiz.description,
+          answers: detailsData.answers || [],
+          preview: quiz.preview,
+          file: quiz.file,
+        };
+        
+        setEditingQuiz(fullQuizData);
+      } else {
+        // 로컬에서만 생성된 퀴즈
+        setEditingQuiz(quiz);
+      }
+    } catch (error) {
+      console.error('퀴즈 상세 조회 실패:', error);
+      // 실패 시 기존 데이터로 편집
+      setEditingQuiz(quiz);
+    }
   };
 
   const handleUpdateQuiz = (data: {
@@ -164,24 +193,23 @@ export default function CreateQuizForm() {
   return (
     <main className="min-h-screen flex flex-col items-start p-8 gap-6">
       <div className="w-full flex justify-between items-center">
+        <div className="flex items-center gap-2 w-full max-w-xl">
+          <Input
+            placeholder="검색어를 입력하세요."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-grow"
+          />
+          <Button size="icon">
+            <Search className="w-5 h-5" />
+          </Button>
+        </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => router.back()}>
             취소
           </Button>
           <Button onClick={handleSave}>저장</Button>
         </div>
-      </div>
-
-      <div className="flex items-center gap-2 w-full max-w-xl">
-        <Input
-          placeholder="검색어를 입력하세요."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-grow"
-        />
-        <Button size="icon">
-          <Search className="w-5 h-5" />
-        </Button>
       </div>
 
       <div className="flex gap-6 flex-wrap justify-start items-start">
@@ -208,7 +236,7 @@ export default function CreateQuizForm() {
               <Button
                 size="icon"
                 variant="outline"
-                onClick={() => setEditingQuiz(quiz)}
+                onClick={() => handleEditQuiz(quiz)}
               >
                 <Pencil className="w-5 h-5" />
               </Button>
