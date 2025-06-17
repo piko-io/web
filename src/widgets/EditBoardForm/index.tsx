@@ -1,16 +1,32 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createBoard } from "@/features/board/createBoard";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
+import { updateBoard } from "@/shared/api/updateBoard";
+import { updateBoardThumbnail } from "@/shared/api/updateBoardThumbnail";
 
-export default function CreateBoardForm() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
+interface EditBoardFormProps {
+  board: {
+    id: string;
+    title: string;
+    description: string;
+    thumbnail?: {
+      path: string;
+    };
+  };
+  onCancel: () => void;
+  onSuccess: (updatedBoard: any) => void;
+}
+
+export default function EditBoardForm({ board, onCancel, onSuccess }: EditBoardFormProps) {
+  const [title, setTitle] = useState(board.title || "");
+  const [description, setDescription] = useState(board.description || "");
+  const [preview, setPreview] = useState<string | null>(
+    board.thumbnail?.path ? `https://s3.alpa.dev/piko/${board.thumbnail.path}` : null
+  );
   const [file, setFile] = useState<File | null>(null);
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,40 +38,42 @@ export default function CreateBoardForm() {
       reader.readAsDataURL(selected);
     } else {
       setFile(null);
-      setPreview(null);
+      setPreview(
+        board.thumbnail?.path ? `https://s3.alpa.dev/piko/${board.thumbnail.path}` : null
+      );
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!title.trim()) {
-      alert("제목을 입력하세요.");
-      return;
-    }
-    
-    if (!file) {
-      alert("썸네일 파일을 선택하세요.");
-      return;
-    }
+    setLoading(true);
 
     try {
-      console.log('보드 생성 데이터:', {
-        title: title.trim(),
-        description: description.trim()
+      await updateBoard(board.id, {
+        title,
+        description
       });
 
-      const board = await createBoard({
-        title: title.trim(),
-        description: description.trim() || "설명이 없습니다.",  
-        file,
-      });
-      
-      console.log('생성된 보드:', board);
-      router.push(`/create-board/${board.id}/create-quiz`);
+      // 2. 썸네일이 변경된 경우 썸네일 업데이트
+      if (file) {
+        await updateBoardThumbnail(board.id, file);
+      }
+
+      // 3. 성공 시 업데이트된 보드 정보 전달
+      const updatedBoard = {
+        ...board,
+        title,
+        description,
+        thumbnail: file ? { path: preview } : board.thumbnail
+      };
+
+      onSuccess(updatedBoard);
+      alert('보드가 성공적으로 수정되었습니다.');
     } catch (error) {
-      console.error('보드 생성 실패:', error);
-      alert('보드 생성에 실패했습니다.');
+      console.error('보드 수정 실패:', error);
+      alert('보드 수정에 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,10 +83,10 @@ export default function CreateBoardForm() {
         onSubmit={handleSubmit}
         className="max-w-md w-full p-6 bg-card rounded-xl shadow flex flex-col gap-6"
       >
-        <h1 className="text-2xl font-bold">보드 만들기</h1>
+        <h1 className="text-2xl font-bold">보드 수정</h1>
         
         <div className="flex flex-col gap-1">
-          <label className="font-medium">제목 *</label>
+          <label className="font-medium">제목</label>
           <Input
             placeholder="제목 입력"
             value={title}
@@ -89,7 +107,7 @@ export default function CreateBoardForm() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-medium">썸네일 *</label>
+          <label className="font-medium">썸네일</label>
           <div
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/20"
@@ -116,9 +134,24 @@ export default function CreateBoardForm() {
           />
         </div>
 
-        <Button type="submit" size="lg" className="w-full">
-          생성 후 퀴즈 만들기
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            className="flex-1"
+            disabled={loading}
+          >
+            취소
+          </Button>
+          <Button 
+            type="submit" 
+            className="flex-1"
+            disabled={loading}
+          >
+            {loading ? "수정 중..." : "수정 완료"}
+          </Button>
+        </div>
       </form>
     </main>
   );

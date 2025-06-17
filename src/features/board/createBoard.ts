@@ -10,15 +10,19 @@ export async function createBoard({
   file: File;
 }) {
   const formData = new FormData();
+  formData.append("title", title);
+  formData.append("content", description);
   formData.append("file", file);
-  formData.append(
-    "body",
-    JSON.stringify({
-      title,
-      content: description,
-    }),
-  );
-
+  
+  console.log('=== 보드 생성 요청 데이터 ===');
+  console.log('title:', title);
+  console.log('content:', description);
+  console.log('file:', file.name, file.size, 'bytes');
+  
   const response = await api.post("/board", formData);
-  return response.data.data; 
+  
+  console.log('=== 보드 생성 응답 ===');
+  console.log('Response:', response.data);
+  
+  return response.data.data;
 }

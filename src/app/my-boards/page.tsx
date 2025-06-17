@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/shared/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,9 +13,11 @@ import {
 } from "@/shared/ui/card";
 import { fetchMyBoards } from "@/features/board/fetchMyBoards";
 import { deleteBoard } from "@/shared/api/deleteBoard";
+import EditBoardForm from "@/widgets/EditBoardForm/index";
 
 export default function MyBoardsPage() {
   const [boards, setBoards] = useState<any[]>([]);
+  const [editingBoard, setEditingBoard] = useState<any>(null);
 
   useEffect(() => {
     async function loadBoards() {
@@ -38,11 +40,39 @@ export default function MyBoardsPage() {
     try {
       await deleteBoard(boardId);
       setBoards(prev => prev.filter(board => board.id !== boardId));
+      alert('보드가 성공적으로 삭제되었습니다.');
     } catch (error) {
       console.error('보드 삭제 실패:', error);
       alert('보드 삭제에 실패했습니다.');
     }
   };
+
+  const handleEditBoard = (board: any) => {
+    setEditingBoard(board);
+  };
+
+  const handleEditSuccess = (updatedBoard: any) => {
+    // 보드 목록에서 해당 보드 업데이트
+    setBoards(prev => prev.map(board => 
+      board.id === updatedBoard.id ? updatedBoard : board
+    ));
+    setEditingBoard(null);
+  };
+
+  const handleEditCancel = () => {
+    setEditingBoard(null);
+  };
+
+  // 수정 모드일 때는 수정 폼 표시
+  if (editingBoard) {
+    return (
+      <EditBoardForm
+        board={editingBoard}
+        onCancel={handleEditCancel}
+        onSuccess={handleEditSuccess}
+      />
+    );
+  }
 
   return (
     <main className="p-8">
@@ -90,18 +120,34 @@ export default function MyBoardsPage() {
                   </CardContent>
                 </Card>
               </Link>
-              <Button
-                size="icon"
-                variant="destructive"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteBoard(b.id, boardTitle);
-                }}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              
+              {/* 수정/삭제 버튼 */}
+              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 bg-white"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEditBoard(b);
+                  }}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteBoard(b.id, boardTitle);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           );
         })}
