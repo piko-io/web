@@ -1,9 +1,9 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/shared/ui/button";
+import { Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { fetchMyBoards } from "@/features/board/fetchMyBoards";
+import { deleteBoard } from "@/shared/api/deleteBoard";
 
 export default function MyBoardsPage() {
   const [boards, setBoards] = useState<any[]>([]);
@@ -29,6 +30,20 @@ export default function MyBoardsPage() {
     loadBoards();
   }, []);
 
+  const handleDeleteBoard = async (boardId: string, boardTitle: string) => {
+    if (!confirm(`"${boardTitle}" 보드를 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      await deleteBoard(boardId);
+      setBoards(prev => prev.filter(board => board.id !== boardId));
+    } catch (error) {
+      console.error('보드 삭제 실패:', error);
+      alert('보드 삭제에 실패했습니다.');
+    }
+  };
+
   return (
     <main className="p-8">
       <div className="flex justify-between items-center mb-4">
@@ -37,7 +52,6 @@ export default function MyBoardsPage() {
           <Link href="/">홈으로</Link>
         </Button>
       </div>
-
       <div className="flex flex-wrap gap-4">
         {boards.map((b) => {
           const boardTitle =
@@ -46,42 +60,49 @@ export default function MyBoardsPage() {
             b.description && b.description.trim().length > 0
               ? b.description
               : "설명이 등록되지 않았습니다.";
-
           const thumbnailSrc =
             b.thumbnail && b.thumbnail.path
               ? `https://s3.alpa.dev/piko/${b.thumbnail.path}`
               : "/placeholder.png";
 
           return (
-            <Link
-              key={b.id}
-              href={`/create-board/${b.id}/create-quiz`}
-              className="w-60 group transition-all duration-300 hover:-translate-y-1"
-            >
-              <Card className="shadow-none border overflow-hidden">
-                <div className="relative">
-                  <Image
-                    src={thumbnailSrc}
-                    alt={`${boardTitle}의 대표 이미지`}
-                    width={400}
-                    height={200}
-                    className="w-full h-48 object-cover transition-transform duration-300"
-                  />
-                </div>
-
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold">
-                    {boardTitle}
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent>
-                  <CardDescription className="text-sm text-gray-600 mb-2">
-                    {boardDescription}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
+            <div key={b.id} className="relative w-60 group transition-all duration-300 hover:-translate-y-1">
+              <Link href={`/create-board/${b.id}/create-quiz`}>
+                <Card className="shadow-none border overflow-hidden">
+                  <div className="relative">
+                    <Image
+                      src={thumbnailSrc}
+                      alt={`${boardTitle}의 대표 이미지`}
+                      width={400}
+                      height={200}
+                      className="w-full h-48 object-cover transition-transform duration-300"
+                    />
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-bold">
+                      {boardTitle}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm text-gray-600 mb-2">
+                      {boardDescription}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Button
+                size="icon"
+                variant="destructive"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteBoard(b.id, boardTitle);
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           );
         })}
       </div>
