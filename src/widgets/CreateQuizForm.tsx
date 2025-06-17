@@ -1,12 +1,14 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Pencil, Trash, Search } from "lucide-react";
 import CreateQuizModal from "@/widgets/CreateQuizModal";
 import { saveBoardQuizzes } from "@/shared/api/saveBoardQuizzes";
+import { fetchBoardQuizzes } from "@/shared/api/fetchBoardQuizzes";
+import { deleteQuiz } from "@/shared/api/deleteQuiz";
 
 interface Quiz {
   id: string;
@@ -14,7 +16,7 @@ interface Quiz {
   question: string;
   description: string;
   answers: string[];
-  file?: File; 
+  file?: File;
 }
 
 export default function CreateQuizForm() {
@@ -26,6 +28,47 @@ export default function CreateQuizForm() {
   const [search, setSearch] = useState("");
   const [openNewQuiz, setOpenNewQuiz] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadQuizzes() {
+      try {
+        console.log('퀴즈 로딩 시작, boardId:', boardId);
+        const data = await fetchBoardQuizzes(boardId);
+        console.log('받아온 퀴즈 데이터:', data);
+        
+        const quizArray = Array.isArray(data) ? data : [];
+        console.log('퀴즈 배열:', quizArray);
+        
+        const loadedQuizzes: Quiz[] = quizArray.map((quiz: any) => {
+          console.log('개별 퀴즈 데이터:', quiz);
+          console.log('answers 필드:', quiz.answers);
+          console.log('choices 필드:', quiz.choices);
+          console.log('options 필드:', quiz.options);
+          console.log('answer_list 필드:', quiz.answer_list);
+          console.log('quiz의 모든 키:', Object.keys(quiz));
+          
+          return {
+            id: quiz.id || Date.now().toString(),
+            question: quiz.question || "",
+            description: quiz.description || "",
+            answers: quiz.answers || quiz.choices || quiz.options || quiz.answer_list || [],
+            preview: quiz.image?.path ? `https://s3.alpa.dev/piko/${quiz.image.path}` : undefined,
+          };
+        });
+        
+        console.log('변환된 퀴즈 데이터:', loadedQuizzes);
+        setQuizzes(loadedQuizzes);
+      } catch (error) {
+        console.error('퀴즈 불러오기 실패:', error);
+        setQuizzes([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadQuizzes();
+  }, [boardId]);
 
   const handleCreateQuiz = (data: {
     file?: File;
@@ -68,8 +111,27 @@ export default function CreateQuizForm() {
     setEditingQuiz(null);
   };
 
-  const handleRemoveQuiz = (quizId: string) => {
-    setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+  const handleRemoveQuiz = async (quizId: string) => {
+    try {
+      if (quizId.length > 20) {
+        await deleteQuiz(quizId);
+        const data = await fetchBoardQuizzes(boardId);
+        const quizArray = Array.isArray(data) ? data : [];
+        const loadedQuizzes: Quiz[] = quizArray.map((quiz: any) => ({
+          id: quiz.id || Date.now().toString(),
+          question: quiz.question || "",
+          description: quiz.description || "",
+          answers: quiz.answers || quiz.choices || quiz.options || quiz.answer_list || [],
+          preview: quiz.image?.path ? `https://s3.alpa.dev/piko/${quiz.image.path}` : undefined,
+        }));
+        setQuizzes(loadedQuizzes);
+      } else {
+        setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+      }
+    } catch (error) {
+      console.error('퀴즈 삭제 실패:', error);
+      alert('퀴즈 삭제에 실패했습니다.');
+    }
   };
 
   const filteredQuizzes = quizzes.filter((quiz) =>
@@ -77,9 +139,27 @@ export default function CreateQuizForm() {
   );
 
   const handleSave = async () => {
-    await saveBoardQuizzes({ boardId, quizzes });
-    router.push("/my-boards");
+    try {
+      const newQuizzes = quizzes.filter(quiz => quiz.file);
+      
+      if (newQuizzes.length > 0) {
+        await saveBoardQuizzes({ boardId, quizzes: newQuizzes });
+      }
+      
+      router.push("/my-boards");
+    } catch (error) {
+      console.error('저장 실패:', error);
+      router.push("/my-boards");
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div>로딩 중...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-start p-8 gap-6">
