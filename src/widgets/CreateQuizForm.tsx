@@ -47,7 +47,6 @@ export default function CreateQuizForm() {
         const data = await fetchBoardQuizzes(boardId);
         console.log('받아온 퀴즈 데이터:', data);
         
-        // API 응답 구조 확인
         let quizArray = [];
         if (Array.isArray(data)) {
           quizArray = data;
@@ -71,7 +70,6 @@ export default function CreateQuizForm() {
             console.log('answer_list 필드:', quiz.answer_list);
             console.log('quiz의 모든 키:', Object.keys(quiz));
             
-            // 답변 배열 찾기
             let answers = [];
             if (Array.isArray(quiz.answers) && quiz.answers.length > 0) {
               answers = quiz.answers;
@@ -88,7 +86,6 @@ export default function CreateQuizForm() {
                 answers = [quiz.answers];
               }
             } else {
-              // 답변이 없으면 퀴즈 상세 정보 조회 시도
               console.log('답변 데이터가 없어서 상세 조회 시도:', quiz.id);
               try {
                 if (quiz.id && quiz.id.length > 20) {
@@ -96,7 +93,6 @@ export default function CreateQuizForm() {
                   const detailData = await fetchQuizDetails(quiz.id);
                   console.log('퀴즈 상세 데이터:', detailData);
                   
-                  // 여러 가능한 데이터 구조 확인
                   if (Array.isArray(detailData.answers) && detailData.answers.length > 0) {
                     answers = detailData.answers;
                     console.log('detailData.answers에서 답변 찾음:', answers);
@@ -111,7 +107,6 @@ export default function CreateQuizForm() {
                 console.error('퀴즈 상세 조회 에러:', detailError);
               }
               
-              // 여전히 답변이 없으면 빈 배열로 설정
               if (answers.length === 0) {
                 console.warn('최종적으로 답변 데이터를 찾을 수 없습니다:', quiz);
                 answers = [];
@@ -166,7 +161,6 @@ export default function CreateQuizForm() {
 
   const handleEditQuiz = async (quiz: Quiz) => {
     try {
-      // 서버에 저장된 퀴즈인 경우 - 기존 데이터로 편집
       if (quiz.id.length > 20) {
         const fullQuizData: Quiz = {
           id: quiz.id,
@@ -179,12 +173,10 @@ export default function CreateQuizForm() {
         
         setEditingQuiz(fullQuizData);
       } else {
-        // 로컬에서만 생성된 퀴즈
         setEditingQuiz(quiz);
       }
     } catch (error) {
       console.error('퀴즈 편집 실패:', error);
-      // 실패 시 기존 데이터로 편집
       setEditingQuiz(quiz);
     }
   };
@@ -206,7 +198,7 @@ export default function CreateQuizForm() {
               question: data.question,
               description: data.description,
               answers: data.answers,
-              file: data.file || q.file, // 새 파일이 없으면 기존 파일 유지
+              file: data.file || q.file,
             }
           : q
       )
@@ -243,33 +235,27 @@ export default function CreateQuizForm() {
 
   const handleSave = async () => {
     try {
-      // 새로 생성된 퀴즈만 저장 (ID가 짧은 것들)
       const newQuizzes = quizzes.filter(quiz => quiz.file && quiz.id.length <= 20);
       
-      // 기존 퀴즈 중 변경된 것들 처리
       const updatedQuizzes = quizzes.filter(quiz => quiz.id.length > 20);
       
       console.log('새 퀴즈:', newQuizzes);
       console.log('수정된 기존 퀴즈:', updatedQuizzes);
       
-      // 새 퀴즈 저장
       if (newQuizzes.length > 0) {
         await saveBoardQuizzes({ boardId, quizzes: newQuizzes });
       }
       
-      // 기존 퀴즈 업데이트
       for (const quiz of updatedQuizzes) {
         try {
           console.log(`퀴즈 ${quiz.id} 업데이트 시작`);
           
-          // 퀴즈 내용 업데이트 (question, description, answers)
           await updateQuiz(quiz.id, {
             question: quiz.question,
             description: quiz.description,
             answers: quiz.answers
           });
           
-          // 이미지가 변경된 경우 이미지도 업데이트
           if (quiz.file) {
             console.log(`퀴즈 ${quiz.id}의 이미지 업데이트 시작`);
             await updateQuizImage(quiz.id, quiz.file);
