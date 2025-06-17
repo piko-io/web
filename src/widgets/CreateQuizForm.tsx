@@ -10,6 +10,7 @@ import { saveBoardQuizzes } from "@/shared/api/saveBoardQuizzes";
 import { fetchBoardQuizzes } from "@/shared/api/fetchBoardQuizzes";
 import { deleteQuiz } from "@/shared/api/deleteQuiz";
 import { fetchQuizDetails } from "@/shared/api/fetchQuizDetails";
+import { updateQuizImage } from "@/shared/api/updateQuizImage";
 
 interface Quiz {
   id: string;
@@ -35,40 +36,110 @@ export default function CreateQuizForm() {
     async function loadQuizzes() {
       try {
         console.log('퀴즈 로딩 시작, boardId:', boardId);
+        
+        if (!boardId) {
+          console.error('boardId가 없습니다');
+          setQuizzes([]);
+          return;
+        }
+
         const data = await fetchBoardQuizzes(boardId);
         console.log('받아온 퀴즈 데이터:', data);
         
-        const quizArray = Array.isArray(data) ? data : [];
+
+        let quizArray = [];
+        if (Array.isArray(data)) {
+          quizArray = data;
+        } else if (data && Array.isArray(data.data)) {
+          quizArray = data.data;
+        } else if (data && data.quizzes && Array.isArray(data.quizzes)) {
+          quizArray = data.quizzes;
+        } else {
+          console.log('예상하지 못한 데이터 구조:', data);
+          quizArray = [];
+        }
+        
         console.log('퀴즈 배열:', quizArray);
         
-        const loadedQuizzes: Quiz[] = quizArray.map((quiz: any) => {
-          console.log('개별 퀴즈 데이터:', quiz);
-          console.log('answers 필드:', quiz.answers);
-          console.log('choices 필드:', quiz.choices);
-          console.log('options 필드:', quiz.options);
-          console.log('answer_list 필드:', quiz.answer_list);
-          console.log('quiz의 모든 키:', Object.keys(quiz));
-          
-          return {
-            id: quiz.id || Date.now().toString(),
-            question: quiz.question || "",
-            description: quiz.description || "",
-            answers: quiz.answers || quiz.choices || quiz.options || quiz.answer_list || [],
-            preview: quiz.image?.path ? `https://s3.alpa.dev/piko/${quiz.image.path}` : undefined,
-          };
-        });
+        const loadedQuizzes: Quiz[] = await Promise.all(
+          quizArray.map(async (quiz: any, index: number) => {
+            console.log(`퀴즈 ${index}:`, quiz);
+            console.log('answers 필드:', quiz.answers);
+            console.log('choices 필드:', quiz.choices);
+            console.log('options 필드:', quiz.options);
+            console.log('answer_list 필드:', quiz.answer_list);
+            console.log('quiz의 모든 키:', Object.keys(quiz));
+            
+            let answers = [];
+            if (Array.isArray(quiz.answers) && quiz.answers.length > 0) {
+              answers = quiz.answers;
+            } else if (Array.isArray(quiz.choices) && quiz.choices.length > 0) {
+              answers = quiz.choices;
+            } else if (Array.isArray(quiz.options) && quiz.options.length > 0) {
+              answers = quiz.options;
+            } else if (Array.isArray(quiz.answer_list) && quiz.answer_list.length > 0) {
+              answers = quiz.answer_list;
+            } else if (typeof quiz.answers === 'string') {
+              try {
+                answers = JSON.parse(quiz.answers);
+              } catch {
+                answers = [quiz.answers];
+              }
+            } else {
+              console.log('답변 데이터가 없어서 상세 조회 시도:', quiz.id);
+              try {
+                if (quiz.id && quiz.id.length > 20) {
+                  console.log('퀴즈 상세 조회 시작:', quiz.id);
+                  const detailData = await fetchQuizDetails(quiz.id);
+                  console.log('퀴즈 상세 데이터:', detailData);
+                  
+                  if (Array.isArray(detailData.answers) && detailData.answers.length > 0) {
+                    answers = detailData.answers;
+                    console.log('detailData.answers에서 답변 찾음:', answers);
+                  } else if (Array.isArray(detailData.choices) && detailData.choices.length > 0) {
+                    answers = detailData.choices;
+                    console.log('detailData.choices에서 답변 찾음:', answers);
+                  } else {
+                    console.log('상세 데이터에서도 답변을 찾을 수 없음. 전체 구조:', detailData);
+                  }
+                }
+              } catch (detailError) {
+                console.error('퀴즈 상세 조회 에러:', detailError);
+              }
+              
+              if (answers.length === 0) {
+                console.warn('최종적으로 답변 데이터를 찾을 수 없습니다:', quiz);
+                answers = [];
+              }
+            }
+            
+            return {
+              id: quiz.id || `temp_${Date.now()}_${index}`,
+              question: quiz.question || quiz.title || "",
+              description: quiz.description || "",
+              answers: answers,
+              preview: quiz.image?.path ? `https://s3.alpa.dev/piko/${quiz.image.path}` : undefined,
+            };
+          })
+        );
         
         console.log('변환된 퀴즈 데이터:', loadedQuizzes);
         setQuizzes(loadedQuizzes);
       } catch (error) {
         console.error('퀴즈 불러오기 실패:', error);
+        console.error('에러 상세:', error.message);
+        console.error('에러 스택:', error.stack);
         setQuizzes([]);
       } finally {
         setLoading(false);
       }
     }
 
-    loadQuizzes();
+    if (boardId) {
+      loadQuizzes();
+    } else {
+      setLoading(false);
+    }
   }, [boardId]);
 
   const handleCreateQuiz = (data: {
@@ -90,28 +161,22 @@ export default function CreateQuizForm() {
 
   const handleEditQuiz = async (quiz: Quiz) => {
     try {
-      // 서버에 저장된 퀴즈인 경우 상세 정보 조회
       if (quiz.id.length > 20) {
-        const details = await fetchQuizDetails(quiz.id);
-        const detailsData = details.data || details;
-        
         const fullQuizData: Quiz = {
           id: quiz.id,
-          question: detailsData.question || quiz.question,
-          description: detailsData.description || quiz.description,
-          answers: detailsData.answers || [],
+          question: quiz.question,
+          description: quiz.description,
+          answers: quiz.answers,
           preview: quiz.preview,
           file: quiz.file,
         };
         
         setEditingQuiz(fullQuizData);
       } else {
-        // 로컬에서만 생성된 퀴즈
         setEditingQuiz(quiz);
       }
     } catch (error) {
-      console.error('퀴즈 상세 조회 실패:', error);
-      // 실패 시 기존 데이터로 편집
+      console.error('퀴즈 편집 실패:', error);
       setEditingQuiz(quiz);
     }
   };
@@ -123,6 +188,7 @@ export default function CreateQuizForm() {
     answers: string[];
   }) => {
     if (!editingQuiz) return;
+    
     setQuizzes((prev) =>
       prev.map((q) =>
         q.id === editingQuiz.id
@@ -132,7 +198,7 @@ export default function CreateQuizForm() {
               question: data.question,
               description: data.description,
               answers: data.answers,
-              file: data.file,
+              file: data.file || q.file,  
             }
           : q
       )
@@ -169,10 +235,29 @@ export default function CreateQuizForm() {
 
   const handleSave = async () => {
     try {
-      const newQuizzes = quizzes.filter(quiz => quiz.file);
+      const newQuizzes = quizzes.filter(quiz => quiz.file && quiz.id.length <= 20);
+      
+      const updatedQuizzes = quizzes.filter(quiz => 
+        quiz.file && quiz.id.length > 20
+      );
+      
+      console.log('새 퀴즈:', newQuizzes);
+      console.log('이미지 업데이트된 기존 퀴즈:', updatedQuizzes);
       
       if (newQuizzes.length > 0) {
         await saveBoardQuizzes({ boardId, quizzes: newQuizzes });
+      }
+      
+      for (const quiz of updatedQuizzes) {
+        if (quiz.file) {
+          try {
+            console.log(`퀴즈 ${quiz.id}의 이미지 업데이트 시작`);
+            await updateQuizImage(quiz.id, quiz.file);
+            console.log(`퀴즈 ${quiz.id}의 이미지 업데이트 완료`);
+          } catch (error) {
+            console.error(`퀴즈 ${quiz.id} 이미지 업데이트 실패:`, error);
+          }
+        }
       }
       
       router.push("/my-boards");
