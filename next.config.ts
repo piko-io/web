@@ -11,9 +11,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "s3.alpa.dev",
       },
+      {
+        protocol: "https",
+        hostname: "piko.alpa.dev",
+      },
     ],
   },
 };
 
 export default nextConfig;
- 
