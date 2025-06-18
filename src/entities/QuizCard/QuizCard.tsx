@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -26,13 +25,11 @@ export default function QuizCard({
 }: QuizCardProps) {
   return (
     <Card className="group transition-all duration-300 hover:-translate-y-1 shadow-none border overflow-hidden w-full max-w-sm mx-auto">
-      <div className="relative w-full aspect-[2/1] sm:aspect-[3/2] lg:aspect-[2/1]">
-        <Image
+      <div className="relative w-full aspect-[2/1] sm:aspect-[3/2] lg:aspect-[2/1] overflow-hidden">
+        <img
           src={thumbnail}
           alt={title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover"
+          className="w-full h-full object-cover"
         />
       </div>
       <CardHeader className="pb-3 px-4 sm:px-6">
