@@ -52,7 +52,6 @@ export default function MyBoardsPage() {
   };
 
   const handleEditSuccess = (updatedBoard: any) => {
-    // 보드 목록에서 해당 보드 업데이트
     setBoards(prev => prev.map(board => 
       board.id === updatedBoard.id ? updatedBoard : board
     ));
@@ -63,7 +62,6 @@ export default function MyBoardsPage() {
     setEditingBoard(null);
   };
 
-  // 수정 모드일 때는 수정 폼 표시
   if (editingBoard) {
     return (
       <EditBoardForm
@@ -121,7 +119,6 @@ export default function MyBoardsPage() {
                 </Card>
               </Link>
               
-              {/* 수정/삭제 버튼 */}
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <Button
                   size="icon"
