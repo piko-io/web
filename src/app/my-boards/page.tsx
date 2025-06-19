@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/shared/ui/button";
 import { Trash2, Edit } from "lucide-react";
 import {
@@ -97,13 +96,11 @@ export default function MyBoardsPage() {
             <div key={b.id} className="relative w-60 group transition-all duration-300 hover:-translate-y-1">
               <Link href={`/create-board/${b.id}/create-quiz`}>
                 <Card className="shadow-none border overflow-hidden">
-                  <div className="relative">
-                    <Image
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <img
                       src={thumbnailSrc}
                       alt={`${boardTitle}의 대표 이미지`}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover transition-transform duration-300"
+                      className="w-full h-full object-cover transition-transform duration-300"
                     />
                   </div>
                   <CardHeader>
