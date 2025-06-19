@@ -17,6 +17,15 @@ interface Quiz {
   };
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export function QuizPlay() {
   const { id } = useParams();
   const router = useRouter();
@@ -48,7 +57,9 @@ export function QuizPlay() {
         console.log('퀴즈 목록 응답:', data);
         
         if (data.status === 200 && Array.isArray(data.data)) {
-          setQuizzes(data.data);
+          const shuffledQuizzes = shuffleArray(data.data);
+          setQuizzes(shuffledQuizzes);
+          console.log('퀴즈 순서 섞기 완료');
         } else {
           throw new Error('퀴즈 데이터가 올바르지 않습니다');
         }
