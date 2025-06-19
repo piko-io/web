@@ -66,6 +66,22 @@ export function QuizPlay() {
     }
   }, [id]);
 
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && result) {
+        e.preventDefault();
+        handleNext();
+      }
+    };
+
+    if (result) {
+      document.addEventListener("keydown", handleKeyPress);
+      return () => {
+        document.removeEventListener("keydown", handleKeyPress);
+      };
+    }
+  }, [result]);
+
   const currentQuiz = quizzes[currentQuizIndex];
   const isLastQuiz = currentQuizIndex === quizzes.length - 1;
 
@@ -84,7 +100,6 @@ export function QuizPlay() {
         ? response.data.answers[0] 
         : "";
       
-      // 결과 저장
       setResults(prev => [...prev, {
         correct: isCorrect,
         userAnswer: answer.trim(),
@@ -108,10 +123,8 @@ export function QuizPlay() {
 
   const handleNext = () => {
     if (isLastQuiz) {
-      // 현재 결과도 포함해서 계산 (마지막 문제 결과 포함)
       const finalResults = [...results];
       
-      // 현재 문제 결과가 아직 results에 없다면 추가
       if (result && finalResults.length === currentQuizIndex) {
         finalResults.push({
           correct: result === "correct",
