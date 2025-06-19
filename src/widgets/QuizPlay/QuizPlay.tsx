@@ -192,9 +192,6 @@ export function QuizPlay() {
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               </div>
-              <span className="text-gray-400 text-xs">
-                {currentQuiz.question.toLowerCase().replace(/[^a-z0-9가-힣]/g, '_').substring(0, 20) || 'code'}.js
-              </span>
             </div>
             <pre className="whitespace-pre-wrap overflow-x-auto">
               <code>{currentQuiz.description}</code>
