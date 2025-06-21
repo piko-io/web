@@ -68,7 +68,7 @@ export default function EditBoardForm({ board, onCancel, onSuccess }: EditBoardF
       };
 
       onSuccess(updatedBoard);
-      alert('보드가 성공적으로 수정되었습니다.');
+      alert('보드가 수정되었습니다.');
     } catch (error) {
       console.error('보드 수정 실패:', error);
       alert('보드 수정에 실패했습니다.');
