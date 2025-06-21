@@ -57,7 +57,7 @@ export function QuizPlay() {
         console.log('퀴즈 목록 응답:', data);
         
         if (data.status === 200 && Array.isArray(data.data)) {
-          const shuffledQuizzes = shuffleArray(data.data);
+          const shuffledQuizzes = shuffleArray(data.data as Quiz[]);
           setQuizzes(shuffledQuizzes);
           console.log('퀴즈 순서 섞기 완료');
         } else {

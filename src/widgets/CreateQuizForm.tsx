@@ -47,7 +47,7 @@ export default function CreateQuizForm() {
         const data = await fetchBoardQuizzes(boardId);
         console.log('받아온 퀴즈 데이터:', data);
         
-        let quizArray: any[] = [];
+        let quizArray = [];
         if (Array.isArray(data)) {
           quizArray = data;
         } else if (data && Array.isArray(data.data)) {
@@ -70,7 +70,7 @@ export default function CreateQuizForm() {
             console.log('answer_list 필드:', quiz.answer_list);
             console.log('quiz의 모든 키:', Object.keys(quiz));
             
-            let answers: string[] = [];
+            let answers = [];
             if (Array.isArray(quiz.answers) && quiz.answers.length > 0) {
               answers = quiz.answers;
             } else if (Array.isArray(quiz.choices) && quiz.choices.length > 0) {
@@ -90,7 +90,7 @@ export default function CreateQuizForm() {
               try {
                 if (quiz.id && quiz.id.length > 20) {
                   console.log('퀴즈 상세 조회 시작:', quiz.id);
-                  const detailData: any = await fetchQuizDetails(quiz.id);
+                  const detailData = await fetchQuizDetails(quiz.id);
                   console.log('퀴즈 상세 데이터:', detailData);
                   
                   if (Array.isArray(detailData.answers) && detailData.answers.length > 0) {
@@ -246,15 +246,7 @@ export default function CreateQuizForm() {
           id: quiz.id || Date.now().toString(),
           question: quiz.question || "",
           description: quiz.description || "",
-          answers: Array.isArray(quiz.answers) 
-            ? quiz.answers 
-            : Array.isArray(quiz.choices) 
-            ? quiz.choices 
-            : Array.isArray(quiz.options) 
-            ? quiz.options 
-            : Array.isArray(quiz.answer_list) 
-            ? quiz.answer_list 
-            : [],
+          answers: quiz.answers || quiz.choices || quiz.options || quiz.answer_list || [],
           preview: quiz.image?.path ? `https://s3.alpa.dev/piko/${quiz.image.path}` : undefined,
         }));
         setQuizzes(loadedQuizzes);

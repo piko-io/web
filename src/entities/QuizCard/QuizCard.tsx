@@ -3,11 +3,11 @@ import Link from "next/link";
 import { Play } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+ Card,
+ CardContent,
+ CardDescription,
+ CardHeader,
+ CardTitle,
 } from "@/shared/ui/card";
 
 interface QuizCardProps {
@@ -24,19 +24,19 @@ export default function QuizCard({
   thumbnail,
 }: QuizCardProps) {
   return (
-    <Card className="group transition-all duration-300 hover:-translate-y-1 shadow-none border overflow-hidden w-full max-w-sm mx-auto flex flex-col h-full">
-      <div className="relative w-full aspect-[2/1] sm:aspect-[3/2] lg:aspect-[2/1] overflow-hidden">
+    <Card className="group transition-all duration-300 hover:-translate-y-1 shadow-none border overflow-hidden w-full max-w-sm mx-auto flex flex-col h-full p-0">
+      <div className="relative w-full h-full aspect-[5/3] sm:aspect-[4/3] lg:aspect-[5/3] overflow-hidden">
         <img
           src={thumbnail}
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center rounded-t-lg"
         />
       </div>
-      <CardHeader className="pb-3 px-4 sm:px-6">
+      <CardHeader className="px-4 sm:px-6 pt-4">
         <CardTitle className="text-base sm:text-lg font-bold line-clamp-2">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 px-4 sm:px-6 pb-6 sm:pb-8 flex flex-col flex-grow">
-        <CardDescription className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-4 line-clamp-3 flex-grow">
+      <CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col flex-grow">
+        <CardDescription className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 flex-grow">
           {description}
         </CardDescription>
         <Button asChild className="w-full text-sm sm:text-base mt-auto">
