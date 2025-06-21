@@ -265,6 +265,11 @@ export default function CreateQuizForm() {
 
   const handleSave = async () => {
     try {
+      if (quizzes.length < 5) {
+        alert('퀴즈를 최소 5개 이상 만들어주세요.');
+        return;
+      }
+
       for (const quiz of quizzes) {
         if (!quiz.preview && !quiz.file) {
           alert(`"${quiz.question || '제목 없음'}" 퀴즈에 이미지를 추가해주세요.`);
@@ -348,7 +353,9 @@ export default function CreateQuizForm() {
           <Button variant="outline" onClick={() => router.back()}>
             취소
           </Button>
-          <Button onClick={handleSave}>저장</Button>
+          <Button onClick={handleSave}>
+            저장 ({quizzes.length}/5)
+          </Button>
         </div>
       </div>
 
