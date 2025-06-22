@@ -62,19 +62,6 @@ export default function QuizResultPage() {
               <div className="text-sm text-gray-500">총 문제</div>
             </div>
           </div>
-          
-          <div className="mt-6">
-            <div className="flex justify-between text-sm text-gray-500 mb-2">
-              <span>진행률</span>
-              <span>{score}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-full ${color} rounded-full transition-all duration-1000 ease-out`}
-                style={{ width: `${score}%` }}
-              />
-            </div>
-          </div>
         </div>
 
         <div className="flex gap-3">
