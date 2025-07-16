@@ -12,12 +12,14 @@ const initialData = [
     title: "국기 보고 나라 맞추기",
     description: "국기를 보고 어느 나라 국기인지 맞추는 퀴즈입니다",
     thumbnail: "/thumbnails/poketmon.png",
+    difficulty: "EASY",
   },
   {
     id: 2,
     title: "2024년 밈 맞추기",
     description: "강 재미로들 하세요",
     thumbnail: "/thumbnails/poketmon.png",
+    difficulty: "NORMAL",
   },
 ];
 
@@ -37,7 +39,8 @@ export default function Home() {
           description: board.description || "설명이 등록되지 않았습니다.",
           thumbnail: board.thumbnail?.path 
             ? `https://s3.alpa.dev/piko/${board.thumbnail.path}` 
-            : "/thumbnails/poketmon.png"
+            : "/thumbnails/poketmon.png",
+          difficulty: board.difficulty || "EASY",
         }));
 
         const localQuizzes = JSON.parse(localStorage.getItem("newQuizzes") || "[]");

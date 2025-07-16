@@ -2,7 +2,34 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card";
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "EASY":
+      return "bg-green-100 text-green-800";
+    case "NORMAL":
+      return "bg-yellow-100 text-yellow-800";
+    case "HARD":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+const getDifficultyText = (difficulty: string) => {
+  switch (difficulty) {
+    case "EASY":
+      return "쉬움";
+    case "NORMAL":
+      return "보통";
+    case "HARD":
+      return "어려움";
+    default:
+      return "알 수 없음";
+  }
+};
 
 export default function QuizPreviewPage() {
   const { id } = useParams();
@@ -58,6 +85,7 @@ export default function QuizPreviewPage() {
   const thumbnailSrc = board?.thumbnail?.path
     ? `https://s3.alpa.dev/piko/${board.thumbnail.path}`
     : "/thumbnails/poketmon.png";
+  const difficulty = board?.difficulty || "EASY";
 
   const handleStartQuiz = () => {
     router.push(`/quiz/${id}/play`);
@@ -107,7 +135,12 @@ export default function QuizPreviewPage() {
       />
       <Card className="w-full max-w-md text-center">
         <CardHeader>
-          <CardTitle>{boardTitle}</CardTitle>
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="flex-1">{boardTitle}</CardTitle>
+            <Badge className={`text-sm flex-shrink-0 ${getDifficultyColor(difficulty)}`}>
+              {getDifficultyText(difficulty)}
+            </Badge>
+          </div>
           <CardDescription>{boardDescription}</CardDescription>
         </CardHeader>
       </Card>

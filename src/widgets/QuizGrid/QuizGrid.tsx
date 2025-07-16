@@ -7,6 +7,7 @@ interface Quiz {
   title: string;
   description: string;
   thumbnail: string;
+  difficulty?: string;
 }
 
 interface QuizGridProps {
@@ -25,6 +26,7 @@ export default function QuizGrid(props: QuizGridProps) {
           title={quiz.title}
           description={quiz.description}
           thumbnail={quiz.thumbnail}
+          difficulty={quiz.difficulty}
         />
       ))}
     </div>

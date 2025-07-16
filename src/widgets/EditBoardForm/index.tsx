@@ -11,6 +11,7 @@ interface EditBoardFormProps {
     id: string;
     title: string;
     description: string;
+    difficulty?: string;
     thumbnail?: {
       path: string;
     };
@@ -22,6 +23,7 @@ interface EditBoardFormProps {
 export default function EditBoardForm({ board, onCancel, onSuccess }: EditBoardFormProps) {
   const [title, setTitle] = useState(board.title || "");
   const [description, setDescription] = useState(board.description || "");
+  const [difficulty, setDifficulty] = useState(board.difficulty || "EASY");
   const [preview, setPreview] = useState<string | null>(
     board.thumbnail?.path ? `https://s3.alpa.dev/piko/${board.thumbnail.path}` : null
   );
@@ -51,19 +53,19 @@ export default function EditBoardForm({ board, onCancel, onSuccess }: EditBoardF
     try {
       await updateBoard(board.id, {
         title,
-        description
+        description,
+        difficulty
       });
 
-      // 2. 썸네일이 변경된 경우 썸네일 업데이트
       if (file) {
         await updateBoardThumbnail(board.id, file);
       }
 
-      // 3. 성공 시 업데이트된 보드 정보 전달
       const updatedBoard = {
         ...board,
         title,
         description,
+        difficulty,
         thumbnail: file ? { path: preview } : board.thumbnail
       };
 
@@ -104,6 +106,19 @@ export default function EditBoardForm({ board, onCancel, onSuccess }: EditBoardF
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">난이도</label>
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="border border-input rounded w-full p-3 focus:outline-none focus:ring-2"
+          >
+            <option value="EASY">쉬움</option>
+            <option value="NORMAL">보통</option>
+            <option value="HARD">어려움</option>
+          </select>
         </div>
 
         <div className="flex flex-col gap-2">

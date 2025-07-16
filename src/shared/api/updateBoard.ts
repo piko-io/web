@@ -3,11 +3,13 @@ import api from "@/shared/api/client";
 export async function updateBoard(boardId: string, data: {
   title: string;
   description: string;
+  difficulty?: string;
 }) {
   try {
     const response = await api.patch(`/board/${boardId}`, {
       title: data.title,
-      description: data.description
+      description: data.description,
+      difficulty: data.difficulty
     });
     
     return response.data;

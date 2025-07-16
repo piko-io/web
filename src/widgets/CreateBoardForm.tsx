@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 export default function CreateBoardForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [difficulty, setDifficulty] = useState("EASY");
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const router = useRouter();
@@ -42,12 +43,14 @@ export default function CreateBoardForm() {
     try {
       console.log('보드 생성 데이터:', {
         title: title.trim(),
-        description: description.trim()
+        description: description.trim(),
+        difficulty: difficulty
       });
       
       const board = await createBoard({
         title: title.trim(),
         description: description.trim() || "설명이 없습니다.",
+        difficulty: difficulty,
         file,
       });
       
@@ -85,6 +88,19 @@ export default function CreateBoardForm() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="font-medium">난이도 *</label>
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="border border-input rounded w-full p-3 focus:outline-none focus:ring-2"
+          >
+            <option value="EASY">쉬움</option>
+            <option value="NORMAL">보통</option>
+            <option value="HARD">어려움</option>
+          </select>
         </div>
         
         <div className="flex flex-col gap-2">

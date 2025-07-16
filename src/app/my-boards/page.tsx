@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 import { Trash2, Edit } from "lucide-react";
 import {
   Card,
@@ -13,6 +14,32 @@ import {
 import { fetchMyBoards } from "@/features/board/fetchMyBoards";
 import { deleteBoard } from "@/shared/api/deleteBoard";
 import EditBoardForm from "@/widgets/EditBoardForm/index";
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "EASY":
+      return "bg-green-100 text-green-800";
+    case "NORMAL":
+      return "bg-yellow-100 text-yellow-800";
+    case "HARD":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+const getDifficultyText = (difficulty: string) => {
+  switch (difficulty) {
+    case "EASY":
+      return "쉬움";
+    case "NORMAL":
+      return "보통";
+    case "HARD":
+      return "어려움";
+    default:
+      return "알 수 없음";
+  }
+};
 
 export default function MyBoardsPage() {
   const [boards, setBoards] = useState<any[]>([]);
@@ -91,6 +118,7 @@ export default function MyBoardsPage() {
             b.thumbnail && b.thumbnail.path
               ? `https://s3.alpa.dev/piko/${b.thumbnail.path}`
               : "/placeholder.png";
+          const difficulty = b.difficulty || "EASY";
 
           return (
             <div key={b.id} className="relative w-60 group transition-all duration-300 hover:-translate-y-1">
@@ -104,9 +132,14 @@ export default function MyBoardsPage() {
                     />
                   </div>
                   <CardHeader>
-                    <CardTitle className="text-lg font-bold">
-                      {boardTitle}
-                    </CardTitle>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg font-bold flex-1">
+                        {boardTitle}
+                      </CardTitle>
+                      <Badge className={`text-xs flex-shrink-0 ${getDifficultyColor(difficulty)}`}>
+                        {getDifficultyText(difficulty)}
+                      </Badge>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-sm text-gray-600 mb-2">
